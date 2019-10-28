@@ -1,5 +1,7 @@
 # TODO: Add more swords.
+# TODO: When one sword goes out of window, make new sword.
 
+# TODO: Refactor the code to put pussy data in a class.
 # TODO: Build a binary which can be downloaded and run.
 # TODO: Make the sword looks better.
 # TODO: Add Bird
@@ -9,25 +11,43 @@
 # TODO: When you die, make it visible on the screen.
 # TODO: Add 3 lifes.
 
+import random
 import pygame
 
-# The start position of a sword.
-sword_x = 400
-sword_y = 350
-sword_width = 20
-sword_height = 100
-sword_velocity = 4
+class Sword:
+  def __init__(self, x, y, width, height, velocity, move_total_period):
+    self.x = x
+    self.y = y
+    self.width = width
+    self.height = height
+    self.velocity = velocity
+    self.move_total_period = move_total_period
+    self.current_cycle = 0
 
-# Sword move total period
-sword_move_total_period = 10
-current_cycle = 0
+  def Rectangle(self):
+    return pygame.Rect(self.x, self.y, self.width, self.height)
 
-
-velocity = 20
+  def Move(self):
+    self.current_cycle += 1
+    if (self.current_cycle == self.move_total_period):
+      self.current_cycle = 0
+      self.x = self.x - self.velocity
+    
 
 # Size of game window.
 max_width = 1200
 max_height = 500
+
+    
+# Return a list of sword.
+def InitializeSword(sword_count, start_x, end_x):
+  sword_list = []
+  for _ in range(sword_count):
+    x = random.randint(start_x, end_x)
+    sword_list.append(Sword(x, 400, 20, 100, 4, 10))
+
+  return sword_list
+
 
 pygame.init()
 win = pygame.display.set_mode((max_width, max_height))
@@ -43,6 +63,8 @@ x = 100
 y = 400
 width, height = pussy.get_size()
 
+velocity = 20
+
 
 # Refresh time in millisecond
 refresh_time = 10
@@ -55,15 +77,14 @@ is_jump = False
 jump_count = 10
 
 def Initialize():
-  global sword_x, sword_y, x, y, is_jump, jump_count
-  sword_x = 400
-  sword_y = 350
+  global x, y, is_jump, jump_count
   x = 100
   y = 400
   is_jump = False
   jump_count = 10
 
 Initialize()
+sword_list = InitializeSword(2, max_width/2, max_width);
 
 run = True
 while run:
@@ -75,23 +96,24 @@ while run:
             
     keys = pygame.key.get_pressed()
 
+    # Detect if Pussy is dead.
+    for sword in sword_list:
+      if pygame.Rect(x, y, width, height).colliderect(sword.Rectangle()):
+        is_dead = True
+        break
+
     if is_dead == True:
       if keys[pygame.K_RETURN]:
         is_dead = False
         Initialize();
+        sword_list = InitializeSword(2, max_width/2, max_width);
+
       else:
         continue
     
-    # Pussy is dead.
-    if pygame.Rect(x, y, width, height).colliderect(pygame.Rect(sword_x, sword_y, sword_width, sword_height)):
-      is_dead = True
-      continue
-
-    # Move the sword.
-    current_cycle += 1
-    if (current_cycle == sword_move_total_period):
-      current_cycle = 0
-      sword_x = sword_x - sword_velocity
+    # Move the swords.
+    for sword in sword_list:
+      sword.Move()
     
     if keys[pygame.K_LEFT]:
         x = x - velocity
@@ -121,10 +143,11 @@ while run:
     win.fill((255, 255, 255))
 
     # Draw sword.
-    pygame.draw.rect(win, (100, 100, 100),
-      (sword_x, sword_y, sword_width, sword_height))
+    for sword in sword_list:
+      pygame.draw.rect(win, (100, 100, 100), sword.Rectangle())
+      
    
-    # Draw pussy.
+    # Draw pussy
     win.blit(pussy, (x,y))
 
     pygame.display.update()
