@@ -1,14 +1,12 @@
 # TODO: Add more swords.
 
-# TODO: Put the game under source control.
 # TODO: Build a binary which can be downloaded and run.
 # TODO: Make the sword looks better.
 # TODO: Add Bird
-# TODO: Add duck for Bird.
+# TODO: Add duck for Character.
 # TODO: Add the your current time cycle.
 # TODO: Corp Pussy to remove unnecessary background.
-# TODO: When you die, make it visible on the screen
-# TODO: When you die, and can restart from the game.
+# TODO: When you die, make it visible on the screen.
 # TODO: Add 3 lifes.
 
 import pygame
@@ -18,13 +16,17 @@ sword_x = 400
 sword_y = 350
 sword_width = 20
 sword_height = 100
-sword_velocity = 20
+sword_velocity = 4
+
+# Sword move total period
+sword_move_total_period = 10
+current_cycle = 0
 
 
 velocity = 20
 
 # Size of game window.
-max_width = 2000
+max_width = 1200
 max_height = 500
 
 pygame.init()
@@ -45,14 +47,23 @@ width, height = pussy.get_size()
 # Refresh time in millisecond
 refresh_time = 10
 
-# Sword move total period
-sword_move_total_period = 50
-current_cycle = 0
-
+# Whether you are dead.
+is_dead = False
 
 # Whether in jump mode and jump cycle.
 is_jump = False
 jump_count = 10
+
+def Initialize():
+  global sword_x, sword_y, x, y, is_jump, jump_count
+  sword_x = 400
+  sword_y = 350
+  x = 100
+  y = 400
+  is_jump = False
+  jump_count = 10
+
+Initialize()
 
 run = True
 while run:
@@ -63,9 +74,17 @@ while run:
             run = False
             
     keys = pygame.key.get_pressed()
+
+    if is_dead == True:
+      if keys[pygame.K_RETURN]:
+        is_dead = False
+        Initialize();
+      else:
+        continue
     
     # Pussy is dead.
     if pygame.Rect(x, y, width, height).colliderect(pygame.Rect(sword_x, sword_y, sword_width, sword_height)):
+      is_dead = True
       continue
 
     # Move the sword.
@@ -82,21 +101,10 @@ while run:
         x = x + velocity
         if x+width >= max_width:
             x = max_width-width
+    
     if not is_jump:
       if keys[pygame.K_SPACE]:
           is_jump = True
-
-      # We should not allow the character to move up and down, which will just
-      # defeat our game purpose. But leave it for now to focus on the task at
-      # hand.
-      if keys[pygame.K_UP]:
-          y = y - velocity
-          if y <= 0:
-              y = 0
-      if keys[pygame.K_DOWN]:
-          y = y + velocity
-          if y+height >= max_height:
-              y = max_height-height
 
     else:
       if jump_count >= -10:
@@ -109,6 +117,7 @@ while run:
          is_jump = False
          jump_count = 10
         
+    # Clear screen.
     win.fill((255, 255, 255))
 
     # Draw sword.
