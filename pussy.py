@@ -1,7 +1,8 @@
+# TODO: Refactor the code to put pussy data in a class.
+
 # TODO: Add more swords.
 # TODO: When one sword goes out of window, make new sword.
 
-# TODO: Refactor the code to put pussy data in a class.
 # TODO: Build a binary which can be downloaded and run.
 # TODO: Make the sword looks better.
 # TODO: Add Bird
@@ -13,6 +14,33 @@
 
 import random
 import pygame
+
+# Size of game window.
+max_width = 1200
+max_height = 500
+
+# Refresh time in millisecond
+# TODO: Study how to update the program faster.
+refresh_time = 10
+
+
+class Pussy:
+  def __init__(self, x, y, velocity):
+    self.x = x
+    self.y = y
+    self.velocity = velocity
+
+    # Load character.
+    self.image = pygame.image.load('IMG-0102-new.JPG')
+    print('Image is loaded successfully: %s' % self.image)
+    print('Image size:', self.image.get_size())
+
+    self.width = self.image.get_width()
+    self.height = self.image.get_height()
+
+  def Rectangle(self):
+    return pygame.Rect(self.x, self.y, self.width, self.height)
+
 
 class Sword:
   def __init__(self, x, y, width, height, velocity, move_total_period):
@@ -34,11 +62,6 @@ class Sword:
       self.x = self.x - self.velocity
     
 
-# Size of game window.
-max_width = 1200
-max_height = 500
-
-    
 # Return a list of sword.
 def InitializeSword(sword_count, start_x, end_x):
   sword_list = []
@@ -48,43 +71,38 @@ def InitializeSword(sword_count, start_x, end_x):
 
   return sword_list
 
+def InitializePussy():
+  x = 100
+  y = 400
+  velocity = 20
+  return Pussy(x, y, velocity)
+
 
 pygame.init()
 win = pygame.display.set_mode((max_width, max_height))
 pygame.display.set_caption("Pussy Jumping Game")
 
-# Load character.
-pussy = pygame.image.load('IMG-0102-new.JPG')
-print('Image is loaded successfully: %s' % pussy)
-print('Image size:', pussy.get_size())
+pussy = None
+sword_list = None
 
-# Start position of the character.
-x = 100
-y = 400
-width, height = pussy.get_size()
-
-velocity = 20
-
-
-# Refresh time in millisecond
-refresh_time = 10
-
-# Whether you are dead.
-is_dead = False
-
+# TODO: Move these into pussy.
 # Whether in jump mode and jump cycle.
 is_jump = False
 jump_count = 10
+# Whether you are dead.
+is_dead = False
+
 
 def Initialize():
-  global x, y, is_jump, jump_count
-  x = 100
-  y = 400
+  global is_jump, jump_count
   is_jump = False
   jump_count = 10
 
+  global pussy, sword_list
+  pussy = InitializePussy()
+  sword_list = InitializeSword(2, max_width/2, max_width)
+
 Initialize()
-sword_list = InitializeSword(2, max_width/2, max_width);
 
 run = True
 while run:
@@ -98,7 +116,7 @@ while run:
 
     # Detect if Pussy is dead.
     for sword in sword_list:
-      if pygame.Rect(x, y, width, height).colliderect(sword.Rectangle()):
+      if pussy.Rectangle().colliderect(sword.Rectangle()):
         is_dead = True
         break
 
@@ -106,7 +124,6 @@ while run:
       if keys[pygame.K_RETURN]:
         is_dead = False
         Initialize();
-        sword_list = InitializeSword(2, max_width/2, max_width);
 
       else:
         continue
@@ -116,13 +133,13 @@ while run:
       sword.Move()
     
     if keys[pygame.K_LEFT]:
-        x = x - velocity
-        if x <= 0:
-            x = 0
+        pussy.x = pussy.x - pussy.velocity
+        if pussy.x <= 0:
+            pussy.x = 0
     if keys[pygame.K_RIGHT]:
-        x = x + velocity
-        if x+width >= max_width:
-            x = max_width-width
+        pussy.x = pussy.x + pussy.velocity
+        if pussy.x+pussy.width >= max_width:
+            pussy.x = max_width-pussy.width
     
     if not is_jump:
       if keys[pygame.K_SPACE]:
@@ -131,9 +148,9 @@ while run:
     else:
       if jump_count >= -10:
          if jump_count > 0:
-           y = y - (jump_count ** 2) * 0.5
+           pussy.y = pussy.y - (jump_count ** 2) * 0.5
          else:
-           y = y + (jump_count ** 2) * 0.5
+           pussy.y = pussy.y + (jump_count ** 2) * 0.5
          jump_count -= 1
       else:
          is_jump = False
@@ -146,9 +163,8 @@ while run:
     for sword in sword_list:
       pygame.draw.rect(win, (100, 100, 100), sword.Rectangle())
       
-   
     # Draw pussy
-    win.blit(pussy, (x,y))
+    win.blit(pussy.image, (pussy.x, pussy.y))
 
     pygame.display.update()
     
