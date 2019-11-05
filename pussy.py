@@ -1,8 +1,4 @@
 # TODO: Refactor the code to put pussy data in a class.
-
-# TODO: Add more swords.
-# TODO: When one sword goes out of window, make new sword.
-
 # TODO: Build a binary which can be downloaded and run.
 # TODO: Make the sword looks better.
 # TODO: Add Bird
@@ -17,12 +13,14 @@ import pygame
 
 # Size of game window.
 max_width = 1200
-max_height = 500
+max_height = 1000
 
 # Refresh time in millisecond
 # TODO: Study how to update the program faster.
-refresh_time = 10
+refresh_time = 50
 
+# Maximum sword count
+max_sword_count = 5
 
 class Pussy:
   def __init__(self, x, y, velocity):
@@ -67,14 +65,31 @@ def InitializeSword(sword_count, start_x, end_x):
   sword_list = []
   for _ in range(sword_count):
     x = random.randint(start_x, end_x)
-    sword_list.append(Sword(x, 400, 20, 100, 4, 10))
+    sword_list.append(Sword(x, 900, 20, 100, 4, 10))
 
   return sword_list
 
+def CheckOutOfWindowSwordAndCreateNewIfNecessary():
+  new_sword_list = []
+
+  for sword in sword_list:
+    if sword.x > 0:
+      new_sword_list.append(sword)
+    else:
+      print('A sword goes out of window')
+
+  while len(new_sword_list) < max_sword_count:
+    x = random.randint(800, max_width)
+    new_sword_list.append(Sword(x, 900, 20, 100, 4, 10))
+
+  return new_sword_list
+
+
+
 def InitializePussy():
   x = 100
-  y = 400
-  velocity = 20
+  y = 900
+  velocity = 50
   return Pussy(x, y, velocity)
 
 
@@ -100,7 +115,7 @@ def Initialize():
 
   global pussy, sword_list
   pussy = InitializePussy()
-  sword_list = InitializeSword(2, max_width/2, max_width)
+  sword_list = InitializeSword(max_sword_count, max_width/2, max_width)
 
 Initialize()
 
@@ -131,6 +146,7 @@ while run:
     # Move the swords.
     for sword in sword_list:
       sword.Move()
+    sword_list = CheckOutOfWindowSwordAndCreateNewIfNecessary()
     
     if keys[pygame.K_LEFT]:
         pussy.x = pussy.x - pussy.velocity
@@ -148,9 +164,9 @@ while run:
     else:
       if jump_count >= -10:
          if jump_count > 0:
-           pussy.y = pussy.y - (jump_count ** 2) * 0.5
+           pussy.y = pussy.y - (jump_count ** 2) * 1.5
          else:
-           pussy.y = pussy.y + (jump_count ** 2) * 0.5
+           pussy.y = pussy.y + (jump_count ** 2) * 1.5
          jump_count -= 1
       else:
          is_jump = False
