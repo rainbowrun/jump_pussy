@@ -41,14 +41,16 @@ class Pussy:
 
 
 class Sword:
-  def __init__(self, x, y, width, height, velocity, move_total_period):
+  def __init__(self, x, y, width, height, move_total_period):
     self.x = x
     self.y = y
     self.width = width
     self.height = height
-    self.velocity = velocity
     self.move_total_period = move_total_period
     self.current_cycle = 0
+
+    # Random speed to make game more interesting.
+    self.velocity = random.randint(5, 30)
 
   def Rectangle(self):
     return pygame.Rect(self.x, self.y, self.width, self.height)
@@ -65,7 +67,7 @@ def InitializeSword(sword_count, start_x, end_x):
   sword_list = []
   for _ in range(sword_count):
     x = random.randint(start_x, end_x)
-    sword_list.append(Sword(x, 900, 20, 100, 4, 10))
+    sword_list.append(Sword(x, 900, 20, 100, 10))
 
   return sword_list
 
@@ -75,12 +77,10 @@ def CheckOutOfWindowSwordAndCreateNewIfNecessary():
   for sword in sword_list:
     if sword.x > 0:
       new_sword_list.append(sword)
-    else:
-      print('A sword goes out of window')
 
   while len(new_sword_list) < max_sword_count:
     x = random.randint(800, max_width)
-    new_sword_list.append(Sword(x, 900, 20, 100, 4, 10))
+    new_sword_list.append(Sword(x, 900, 20, 100, 10))
 
   return new_sword_list
 
@@ -89,7 +89,7 @@ def CheckOutOfWindowSwordAndCreateNewIfNecessary():
 def InitializePussy():
   x = 100
   y = 900
-  velocity = 50
+  velocity = 20
   return Pussy(x, y, velocity)
 
 
@@ -164,9 +164,9 @@ while run:
     else:
       if jump_count >= -10:
          if jump_count > 0:
-           pussy.y = pussy.y - (jump_count ** 2) * 1.5
+           pussy.y = pussy.y - (jump_count ** 2) * 0.5
          else:
-           pussy.y = pussy.y + (jump_count ** 2) * 1.5
+           pussy.y = pussy.y + (jump_count ** 2) * 0.5
          jump_count -= 1
       else:
          is_jump = False
