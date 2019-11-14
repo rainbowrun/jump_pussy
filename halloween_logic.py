@@ -1,4 +1,5 @@
 import random
+import itertools
 
 class Person:
   def __init__(self, gender, first_name, last_name,
@@ -40,73 +41,38 @@ def ListAllCombinations(persons):
 
   person_combinations = []
 
-  for i1 in range(len(good_persons)-4):
-    print(f'i1={i1}')
-    for i2 in range(i1+1, len(good_persons)):
-      for i3 in range(i2+1, len(good_persons)):
-        for i4 in range(i3+1, len(good_persons)):
-          for i5 in range(i4+1, len(good_persons)):
-            # Check attributes uniques.
-            if len(set([
-                good_persons[i1].first_name,
-                good_persons[i2].first_name,
-                good_persons[i3].first_name,
-                good_persons[i4].first_name,
-                good_persons[i5].first_name])) != 5:
-              continue
+  # The total item count is C(len(good_persons), 5).
+  for combination in itertools.combinations(good_persons, 5):
+    # Check attributes uniques.
+    if len(set([person.first_name for person in combination])) != 5:
+      continue
 
-            if len(set([
-                good_persons[i1].last_name,
-                good_persons[i2].last_name,
-                good_persons[i3].last_name,
-                good_persons[i4].last_name,
-                good_persons[i5].last_name])) != 5:
-              continue
+    if len(set([person.last_name for person in combination])) != 5:
+      continue
 
-            if len(set([
-                good_persons[i1].start_time,
-                good_persons[i2].start_time,
-                good_persons[i3].start_time,
-                good_persons[i4].start_time,
-                good_persons[i5].start_time])) != 5:
-              continue
+    if len(set([person.start_time for person in combination])) != 5:
+      continue
 
-            if len(set([
-                good_persons[i1].costume,
-                good_persons[i2].costume,
-                good_persons[i3].costume,
-                good_persons[i4].costume,
-                good_persons[i5].costume])) != 5:
-              continue
+    if len(set([person.costume for person in combination])) != 5:
+      continue
 
-            if len(set([
-                good_persons[i1].activity,
-                good_persons[i2].activity,
-                good_persons[i3].activity,
-                good_persons[i4].activity,
-                good_persons[i5].activity])) != 5:
-              continue
+    if len(set([person.activity for person in combination])) != 5:
+      continue
 
-            # Check if it has 3 boys and 2 girls.
-            num_boys = 0
-            num_girls = 0
-            for i in [i1, i2, i3, i4, i5]:
-              if person[i].gender == 'boy':
-                num_boys += 1
-              else:
-                num_girls += 1
-            if num_boys != 3 or num_girls != 2:
-              continue
+    # Check if it has 3 boys and 2 girls.
+    num_boys = 0
+    num_girls = 0
+    for person in combination:
+      if person.gender == 'boy':
+        num_boys += 1
+      else:
+        num_girls += 1
+    if num_boys != 3 or num_girls != 2:
+      continue
 
-            person_combinations.append([
-                good_persons[i1],
-                good_persons[i2],
-                good_persons[i3],
-                good_persons[i4],
-                good_persons[i5],
-                ])
+    person_combinations.append(combination)
 
-  print(f'There are {len(person_combinations)} combinations.')
+  print(f'There are {len(person_combinations)} valid combinations.')
   return person_combinations
 
 
@@ -302,7 +268,7 @@ def main():
     CheckRule(persons, rule)
     CountGoodPerson(persons)
 
-  ListAllCombinations(persons)
+  person_combinations = ListAllCombinations(persons)
 
 
 if __name__ == '__main__':
