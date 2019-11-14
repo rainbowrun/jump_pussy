@@ -1,44 +1,5 @@
 import random
 
-genders = [
-  'boy',
-  'girl']
-
-first_names = [
-  'david',
-  'elizabeth',
-  'fiona',
-  'george',
-  'hector']
-
-last_names = [
-  'bell',
-  'brown',
-  'collins',
-  'miller',
-  'wilson']
-
-start_times = [
-  '5:00',
-  '5:30',
-  '6:00',
-  '6:30',
-  '7:00']
-
-costumes = [
-  'ghost',
-  'witch',
-  'athlete',
-  'monster',
-  'dog']
-
-activities = [
-  'trick-or-treating',
-  'haunted hayrides',
-  'pumpkin picking',
-  'carving pumpkins',
-  'bobbing for apples']
-
 class Person:
   def __init__(self, gender, first_name, last_name,
                start_time, costume, activity):
@@ -287,6 +248,45 @@ def rule_10(person):
 
 
 def main():
+  genders = [
+    'boy',
+    'girl']
+
+  first_names = [
+    'david',
+    'elizabeth',
+    'fiona',
+    'george',
+    'hector']
+
+  last_names = [
+    'bell',
+    'brown',
+    'collins',
+    'miller',
+    'wilson']
+
+  start_times = [
+    '5:00',
+    '5:30',
+    '6:00',
+    '6:30',
+    '7:00']
+
+  costumes = [
+    'ghost',
+    'witch',
+    'athlete',
+    'monster',
+    'dog']
+
+  activities = [
+    'trick-or-treating',
+    'haunted hayrides',
+    'pumpkin picking',
+    'carving pumpkins',
+    'bobbing for apples']
+
   persons = []
 
   for gender in genders:
@@ -297,7 +297,6 @@ def main():
             for activity in activities:
               persons.append(Person(gender, first_name, last_name,
                                     start_time, costume, activity))
-
 
   CountGoodPerson(persons)
 
