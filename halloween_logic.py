@@ -10,6 +10,7 @@ class Person:
     self.costume = costume
     self.activity = activity
 
+    # Flag to indicate whether this attribute combination is good.
     self.good = True
 
   def __str__(self):
@@ -32,23 +33,20 @@ def CheckRule(persons, rule):
 
 def ListAllCombinations(persons):
   good_persons = [person for person in persons if person.good]
-
   assert len(good_persons) >= 5, f'Not enough person available {len(good_persons)}'
   print(f'There are {len(good_persons)} good persons in all {len(persons)} persons.')
-
   for i, person in enumerate(good_persons):
     print('\t', i, person)
 
   person_combinations = []
 
-  for i1 in range(len(good_persons)):
+  for i1 in range(len(good_persons)-4):
     print(f'i1={i1}')
     for i2 in range(i1+1, len(good_persons)):
       for i3 in range(i2+1, len(good_persons)):
         for i4 in range(i3+1, len(good_persons)):
           for i5 in range(i4+1, len(good_persons)):
             # Check attributes uniques.
-
             if len(set([
                 good_persons[i1].first_name,
                 good_persons[i2].first_name,
@@ -109,37 +107,34 @@ def ListAllCombinations(persons):
                 ])
 
   print(f'There are {len(person_combinations)} combinations.')
+  return person_combinations
 
 
-def rule_name_1(person):
+def rule_name(person):
   if person.first_name == 'david':
     if person.gender == 'boy':
       person.good = True
     else:
       person.good = False
 
-def rule_name_2 (person):
   if person.first_name=='george':
     if person.gender=='boy':
       person.good=True
     else:
       person.good=False
 
-def rule_name_3 (person):
   if person.first_name=='hector':
     if person.gender=='boy':
       person.good=True
     else:
       person.good=False
 
-def rule_name_4 (person):
   if person.first_name=='fiona':
     if person.gender=='girl':
       person.good=True
     else:
       person.good=False
 
-def rule_name_5 (person):
   if person.first_name=='elizabeth':
     if person.gender=='girl':
       person.good=True
@@ -185,6 +180,7 @@ def rule_3(person):
     else:
       person.good = True
 
+
 def rule_4(person):
   if person.last_name == 'bell':
     if person.gender == 'boy':
@@ -195,6 +191,7 @@ def rule_4(person):
       person.good = False
       return
       
+
 def rule_6(person):
   if person.last_name == 'wilson':
     if person.gender == 'girl':
@@ -300,9 +297,8 @@ def main():
 
   CountGoodPerson(persons)
 
-  for rule in [rule_name_1, rule_name_2, rule_name_3, rule_name_4, rule_name_5,
-               rule_1, rule_2, rule_3, rule_4, rule_6, rule_7, rule_8, rule_10,
-              ]:
+  for rule in [rule_name, rule_1, rule_2, rule_3, rule_4, rule_6,
+               rule_7, rule_8, rule_10]:
     CheckRule(persons, rule)
     CountGoodPerson(persons)
 
