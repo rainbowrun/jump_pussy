@@ -40,21 +40,6 @@ def CheckPersonRule(persons, rule):
     if person.good:
       rule(person)
 
-  ## Let's check if we still have any good person with name 'hector'.
-  #has_hector = False
-  #for person in persons:
-  #  if person.good:
-  #    if person.first_name == 'hector' and \
-  #       person.start_time =='7:00' and \
-  #       person.activity == 'trick-or-treating':
-  #      has_hector = True
-  #      break
-
-  #if has_hector:
-  #  print('Still has hector with treak-or-treating at 7:00')
-  #else:
-  #  print('No hector t-o-t at 7:00 any more!')
-
 
 def ListAllCombinations(persons):
   good_persons = [person for person in persons if person.good]
@@ -156,14 +141,11 @@ def rule_2(person):
 
 def rule_3(person):
   if person.first_name == 'hector':
-    #print('First Name is hector')
-    #print(person)
     if person.start_time != '7:00' or person.activity != 'trick-or-treating':
       person.good = False
     else:
       person.good = True
   else:
-    #print('First Name is NOT hector')
     if person.start_time == '7:00' or person.activity == 'trick-or-treating':
       person.good = False
     else:
@@ -197,7 +179,7 @@ def is_time1_30_minutes_late_than_time2(time1, time2):
   if time1 == '7:00':
     return time2 == '6:30'
 
-  assert False, f'Can not get here. {time1}, {time2}'
+  assert False, f'Should not get here. {time1}, {time2}'
   
 
 def rule_5(combination):
@@ -315,7 +297,6 @@ def rule_9(combination):
     return False
 
 
-
 def rule_10(person):
   if person.last_name == 'brown':
     if person.gender == 'girl':
@@ -386,27 +367,20 @@ def main():
     CheckPersonRule(persons, rule)
     CountGoodPerson(persons)
 
+  def PrintCombinations(person_combinations):
+    print(f'There are {len(person_combinations)} valid combinations.')
+    for combination in person_combinations:
+      print('========')
+      for person in combination:
+        print('\t', person)
+
   person_combinations = ListAllCombinations(persons)
-  print(f'There are {len(person_combinations)} valid combinations.')
-  for combination in person_combinations:
-    print('========')
-    for person in combination:
-      print('\t', person)
+  PrintCombinations(person_combinations)
 
 
-  person_combinations = CheckCombinationRule(person_combinations, rule_9)
-  print(f'There are {len(person_combinations)} valid combinations.')
-  for combination in person_combinations:
-    print('========')
-    for person in combination:
-      print('\t', person)
-
-  person_combinations = CheckCombinationRule(person_combinations, rule_5)
-  print(f'There are {len(person_combinations)} valid combinations.')
-  for combination in person_combinations:
-    print('========')
-    for person in combination:
-      print('\t', person)
+  for rule in [rule_9, rule_5]:
+    person_combinations = CheckCombinationRule(person_combinations, rule)
+    PrintCombinations(person_combinations)
 
 
 if __name__ == '__main__':
