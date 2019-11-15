@@ -21,7 +21,8 @@ class Person:
 
 def CountGoodPerson(persons):
    good_persons = [person for person in persons if person.good]
-   print(f'There are possible {len(good_persons)} persons. Here are some of them:')
+   print(f'There are possible {len(good_persons)} persons. '
+         f'Here are some of them:')
    for choice in random.choices(good_persons, k=10):
      print('\t', choice)
 
@@ -43,8 +44,8 @@ def CheckPersonRule(persons, rule):
 
 def ListAllCombinations(persons):
   good_persons = [person for person in persons if person.good]
-  assert len(good_persons) >= 5, f'Not enough person available {len(good_persons)}'
-  print(f'There are {len(good_persons)} good persons in all {len(persons)} persons.')
+  print(f'There are {len(good_persons)} good persons in '
+        f'all {len(persons)} persons.')
   for i, person in enumerate(good_persons):
     print('\t', i, person)
 
@@ -135,18 +136,21 @@ def rule_2(person):
        else:
          person.good = False
   else:
-    if person.costume == 'witch' or person.activity == 'pumpkin picking':
+    if (person.costume == 'witch' or
+        person.activity == 'pumpkin picking'):
       person.good = False
 
 
 def rule_3(person):
   if person.first_name == 'hector':
-    if person.start_time != '7:00' or person.activity != 'trick-or-treating':
+    if (person.start_time != '7:00' or 
+        person.activity != 'trick-or-treating'):
       person.good = False
     else:
       person.good = True
   else:
-    if person.start_time == '7:00' or person.activity == 'trick-or-treating':
+    if (person.start_time == '7:00' or
+        person.activity == 'trick-or-treating'):
       person.good = False
     else:
       person.good = True
@@ -187,7 +191,8 @@ def rule_5(combination):
 
   for person in combination:
     if person.first_name == 'david':
-      if person.last_name == 'collins' or person.last_name == 'wilson':
+      if (person.last_name == 'collins' or
+          person.last_name == 'wilson'):
         return False
       david = person
       break
@@ -203,7 +208,8 @@ def rule_5(combination):
   if not fiona:
     return False
 
-  return is_time1_30_minutes_late_than_time2(david.start_time, fiona.start_time)
+  return is_time1_30_minutes_late_than_time2(
+      david.start_time, fiona.start_time)
 
 
 def rule_6(person):
@@ -368,7 +374,7 @@ def main():
     CountGoodPerson(persons)
 
   def PrintCombinations(person_combinations):
-    print(f'There are {len(person_combinations)} valid combinations.')
+    print(f'There are {len(person_combinations)} valid combinations:')
     for combination in person_combinations:
       print('========')
       for person in combination:
@@ -377,9 +383,9 @@ def main():
   person_combinations = ListAllCombinations(persons)
   PrintCombinations(person_combinations)
 
-
   for rule in [rule_9, rule_5]:
-    person_combinations = CheckCombinationRule(person_combinations, rule)
+    person_combinations = CheckCombinationRule(person_combinations,
+                                               rule)
     PrintCombinations(person_combinations)
 
 
