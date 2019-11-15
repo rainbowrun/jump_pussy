@@ -26,10 +26,34 @@ def CountGoodPerson(persons):
      print('\t', choice)
 
 
-def CheckRule(persons, rule):
+def CheckCombinationRule(combinations, rule):
+  new_combinations = []
+  for combination in combinations:
+    if rule(combination):
+      new_combinations.append(combination)
+
+  return new_combinations
+
+
+def CheckPersonRule(persons, rule):
   for person in persons:
     if person.good:
       rule(person)
+
+  ## Let's check if we still have any good person with name 'hector'.
+  #has_hector = False
+  #for person in persons:
+  #  if person.good:
+  #    if person.first_name == 'hector' and \
+  #       person.start_time =='7:00' and \
+  #       person.activity == 'trick-or-treating':
+  #      has_hector = True
+  #      break
+
+  #if has_hector:
+  #  print('Still has hector with treak-or-treating at 7:00')
+  #else:
+  #  print('No hector t-o-t at 7:00 any more!')
 
 
 def ListAllCombinations(persons):
@@ -72,7 +96,6 @@ def ListAllCombinations(persons):
 
     person_combinations.append(combination)
 
-  print(f'There are {len(person_combinations)} valid combinations.')
   return person_combinations
 
 
@@ -110,15 +133,12 @@ def rule_name(person):
 
 def rule_1(person):
   if person.costume == 'ghost':
-    if person.start_time == '5:30':
-      if person.activity == 'trick-or-treating':
-        person.good = True
-      else:
-        person.good = False
+    if person.start_time == '5:00':
+      person.good = True
     else:
       person.good = False
   else:
-    if person.start_time == '5:30' or person.activity == 'trick-or-treating':
+    if person.start_time == '5:00':
         person.good = False
 
 
@@ -136,11 +156,14 @@ def rule_2(person):
 
 def rule_3(person):
   if person.first_name == 'hector':
+    #print('First Name is hector')
+    #print(person)
     if person.start_time != '7:00' or person.activity != 'trick-or-treating':
       person.good = False
     else:
       person.good = True
   else:
+    #print('First Name is NOT hector')
     if person.start_time == '7:00' or person.activity == 'trick-or-treating':
       person.good = False
     else:
@@ -156,7 +179,50 @@ def rule_4(person):
     if person.costume == 'ghost' or person.costume == 'monster':
       person.good = False
       return
-      
+ 
+
+def is_time1_30_minutes_late_than_time2(time1, time2):
+  if time1 == '5:00':
+    return False
+  
+  if time1 == '5:30':
+    return time2 == '5:00'
+
+  if time1 == '6:00':
+    return time2 == '5:30'
+  
+  if time1 == '6:30':
+    return time2 == '6:00'
+
+  if time1 == '7:00':
+    return time2 == '6:30'
+
+  assert False, f'Can not get here. {time1}, {time2}'
+  
+
+def rule_5(combination):
+  david = None
+
+  for person in combination:
+    if person.first_name == 'david':
+      if person.last_name == 'collins' or person.last_name == 'wilson':
+        return False
+      david = person
+      break
+
+  if not david:
+    return False
+
+  fiona = None
+  for person in combination:
+    if person.first_name == 'fiona':
+      fiona = person
+      break
+  if not fiona:
+    return False
+
+  return is_time1_30_minutes_late_than_time2(david.start_time, fiona.start_time)
+
 
 def rule_6(person):
   if person.last_name == 'wilson':
@@ -197,6 +263,57 @@ def rule_8(person):
   else:
     if person.costume == 'dog' or person.start_time == '5:30':
       person.good = False
+
+
+# Return -1 if time1 < time2
+# 0 if they equal
+# 1 if time1 > time2
+def compare_time(time1, time2):
+  fields = time1.split(':')
+  hour1 = int(fields[0])
+  minute1 = int(fields[1])
+
+  fields = time2.split(':')
+  hour2 = int(fields[0])
+  minute2 = int(fields[1])
+
+  if hour2 > hour1:
+     return -1
+  elif hour1 > hour2:
+     return 1
+  elif minute2 > minute1:
+     return -1
+  elif minute1 > minute2:
+     return 1
+  else:
+     return 0
+
+
+def rule_9(combination):
+  monster_boy = None
+  for person in combination:
+    if person.gender == 'boy' and person.costume == 'monster':
+      monster_boy = person
+      break
+
+  if not monster_boy:
+    return False
+
+  athlete_boy = None
+  for person in combination:
+    if person.gender == 'boy' and person.costume == 'athlete':
+      athlete_boy = person
+      break
+
+  if not athlete_boy:
+    return False
+
+  result = compare_time(monster_boy.start_time, athlete_boy.start_time)
+  if result == -1:
+    return True
+  else:
+    return False
+
 
 
 def rule_10(person):
@@ -265,10 +382,31 @@ def main():
 
   for rule in [rule_name, rule_1, rule_2, rule_3, rule_4, rule_6,
                rule_7, rule_8, rule_10]:
-    CheckRule(persons, rule)
+    print('Check rule:', rule)
+    CheckPersonRule(persons, rule)
     CountGoodPerson(persons)
 
   person_combinations = ListAllCombinations(persons)
+  print(f'There are {len(person_combinations)} valid combinations.')
+  for combination in person_combinations:
+    print('========')
+    for person in combination:
+      print('\t', person)
+
+
+  person_combinations = CheckCombinationRule(person_combinations, rule_9)
+  print(f'There are {len(person_combinations)} valid combinations.')
+  for combination in person_combinations:
+    print('========')
+    for person in combination:
+      print('\t', person)
+
+  person_combinations = CheckCombinationRule(person_combinations, rule_5)
+  print(f'There are {len(person_combinations)} valid combinations.')
+  for combination in person_combinations:
+    print('========')
+    for person in combination:
+      print('\t', person)
 
 
 if __name__ == '__main__':
