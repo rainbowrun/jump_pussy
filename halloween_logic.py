@@ -1,3 +1,4 @@
+import datetime
 import random
 import itertools
 
@@ -16,7 +17,7 @@ class Person:
 
   def __str__(self):
     return (f'{self.gender}:{self.first_name}:{self.last_name}:'
-            f'{self.start_time}:{self.costume}:{self.activity}')
+            f'{self.start_time.strftime("%H:%M")}:{self.costume}:{self.activity}')
 
 
 def CountGoodPerson(persons):
@@ -119,12 +120,12 @@ def rule_name(person):
 
 def rule_1(person):
   if person.costume == 'ghost':
-    if person.start_time == '5:00':
+    if person.start_time == datetime.time(5, 00):
       person.good = True
     else:
       person.good = False
   else:
-    if person.start_time == '5:00':
+    if person.start_time == datetime.time(5, 00):
         person.good = False
 
 
@@ -143,13 +144,13 @@ def rule_2(person):
 
 def rule_3(person):
   if person.first_name == 'hector':
-    if (person.start_time != '7:00' or 
+    if (person.start_time != datetime.time(7, 00) or 
         person.activity != 'trick-or-treating'):
       person.good = False
     else:
       person.good = True
   else:
-    if (person.start_time == '7:00' or
+    if (person.start_time == datetime.time(7, 00) or
         person.activity == 'trick-or-treating'):
       person.good = False
     else:
@@ -166,25 +167,6 @@ def rule_4(person):
       person.good = False
       return
  
-
-def is_time1_30_minutes_late_than_time2(time1, time2):
-  if time1 == '5:00':
-    return False
-  
-  if time1 == '5:30':
-    return time2 == '5:00'
-
-  if time1 == '6:00':
-    return time2 == '5:30'
-  
-  if time1 == '6:30':
-    return time2 == '6:00'
-
-  if time1 == '7:00':
-    return time2 == '6:30'
-
-  assert False, f'Should not get here. {time1}, {time2}'
-  
 
 def rule_5(combination):
   david = None
@@ -208,8 +190,8 @@ def rule_5(combination):
   if not fiona:
     return False
 
-  return is_time1_30_minutes_late_than_time2(
-      david.start_time, fiona.start_time)
+  return ((david.start_time.hour*60 + david.start_time.minute) -
+          (fiona.start_time.hour*60 + fiona.start_time.minute)) == 30
 
 
 def rule_6(person):
@@ -225,12 +207,12 @@ def rule_6(person):
 
 def rule_7(person):
   if person.first_name=="fiona":
-    if person.start_time=='6:00':
+    if person.start_time==datetime.time(6, 00):
       person.good = True
     else:
       person.good = False
   else:
-    if person.start_time == '6:00':
+    if person.start_time == datetime.time(6, 00):
       person.good = False
 
 
@@ -240,7 +222,7 @@ def rule_8(person):
       person.good = False
       return
 
-    if person.costume != 'dog' or person.start_time != '5:30':
+    if person.costume != 'dog' or person.start_time != datetime.time(5, 30):
       person.good = False
       return
 
@@ -249,32 +231,8 @@ def rule_8(person):
       return
 
   else:
-    if person.costume == 'dog' or person.start_time == '5:30':
+    if person.costume == 'dog' or person.start_time == datetime.time(5, 30):
       person.good = False
-
-
-# Return -1 if time1 < time2
-# 0 if they equal
-# 1 if time1 > time2
-def compare_time(time1, time2):
-  fields = time1.split(':')
-  hour1 = int(fields[0])
-  minute1 = int(fields[1])
-
-  fields = time2.split(':')
-  hour2 = int(fields[0])
-  minute2 = int(fields[1])
-
-  if hour2 > hour1:
-     return -1
-  elif hour1 > hour2:
-     return 1
-  elif minute2 > minute1:
-     return -1
-  elif minute1 > minute2:
-     return 1
-  else:
-     return 0
 
 
 def rule_9(combination):
@@ -296,11 +254,7 @@ def rule_9(combination):
   if not athlete_boy:
     return False
 
-  result = compare_time(monster_boy.start_time, athlete_boy.start_time)
-  if result == -1:
-    return True
-  else:
-    return False
+  return monster_boy.start_time < athlete_boy.start_time
 
 
 def rule_10(person):
@@ -334,11 +288,11 @@ def main():
     'wilson']
 
   start_times = [
-    '5:00',
-    '5:30',
-    '6:00',
-    '6:30',
-    '7:00']
+    datetime.time(5, 00),
+    datetime.time(5, 30),
+    datetime.time(6, 00),
+    datetime.time(6, 30),
+    datetime.time(7, 00)]
 
   costumes = [
     'ghost',
