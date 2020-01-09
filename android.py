@@ -24,16 +24,55 @@ refresh_time = 50
 # Maximum sword count
 max_sword_count = 5
 
+BIRD_IMAGE = pygame.image.load('bird.png')
+print('Image is loaded successfully: %s' % BIRD_IMAGE)
+print('Image size:', BIRD_IMAGE.get_size())
+
+PUSSY_IMAGE = pygame.image.load('android-new.png')
+print('Image is loaded successfully: %s' % PUSSY_IMAGE)
+print('Image size:', PUSSY_IMAGE.get_size())
+
+
+class Bird:
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+    self.velocity = 5
+    self.move_total_period = 1
+    self.current_cycle = 0
+
+    self.image = BIRD_IMAGE
+
+    self.width = self.image.get_width()
+    self.height = self.image.get_height()
+
+  def Rectangle(self):
+    return pygame.Rect(self.x, self.y, self.width, self.height)
+
+  def Move(self):
+    self.current_cycle += 1
+    if (self.current_cycle == self.move_total_period):
+      self.current_cycle = 0
+      self.x = self.x + self.velocity
+    
+def CheckOutOfWindowBirdAndCreateNewIfNecessary():
+  for bird in bird_list:
+    if bird.x < 0:
+      bird.velocity = -1 * bird.velocity
+    elif bird.x > max_width - bird.width:
+      bird.velocity = -1 * bird.velocity
+
+  return bird_list
+
+
 class Pussy:
   def __init__(self, x, y, velocity):
     self.x = x
     self.y = y
     self.velocity = velocity
 
-    # Load character.
-    self.image = pygame.image.load('android-new.png')
-    print('Image is loaded successfully: %s' % self.image)
-    print('Image size:', self.image.get_size())
+    self.image = PUSSY_IMAGE
 
     self.width = self.image.get_width()
     self.height = self.image.get_height()
@@ -99,9 +138,6 @@ pygame.init()
 win = pygame.display.set_mode((max_width, max_height))
 pygame.display.set_caption("Pussy Jumping Game")
 
-pussy = None
-sword_list = None
-
 # TODO: Move these into pussy.
 # Whether in jump mode and jump cycle.
 is_jump = False
@@ -115,11 +151,15 @@ def Initialize():
   is_jump = False
   jump_count = JUMP_COUNT
 
-  global pussy, sword_list
   pussy = InitializePussy()
   sword_list = InitializeSword(max_sword_count, max_width/2, max_width)
 
-Initialize()
+  bird = Bird(200, 200)
+  bird_list = [bird]
+
+  return pussy, sword_list, bird_list
+
+pussy, sword_list, bird_list = Initialize()
 
 run = True
 while run:
@@ -149,6 +189,11 @@ while run:
     for sword in sword_list:
       sword.Move()
     sword_list = CheckOutOfWindowSwordAndCreateNewIfNecessary()
+    
+    # Move the birds.
+    for bird in bird_list:
+      bird.Move()
+    bird_list = CheckOutOfWindowBirdAndCreateNewIfNecessary()
     
     if keys[pygame.K_LEFT]:
         pussy.x = pussy.x - pussy.velocity
@@ -181,6 +226,10 @@ while run:
     for sword in sword_list:
       pygame.draw.rect(win, (100, 100, 100), sword.Rectangle())
       
+    # Draw birds.
+    for bird in bird_list:
+      win.blit(bird.image, (bird.x, bird.y))
+
     # Draw pussy
     win.blit(pussy.image, (pussy.x, pussy.y))
 
