@@ -134,14 +134,10 @@ class ResultKeeper:
     else:
       print(f'Target value {self.target_value} is NOT found.')
 
-
-if len(sys.argv) == 1:
-  result_keeper = ResultKeeper(51)
-elif len(sys.argv) == 2:
-  result_keeper = ResultKeeper(int(sys.argv[1]))
-else:
-  print('Usage %s [target_value]' % sys.argv[0])
-  sys.exit(0)
+#
+# 6 - (7! / (8 - 5!)) = 51
+#
+result_keeper = ResultKeeper(51)
 
 
 def ConstructExpression(node_list):
