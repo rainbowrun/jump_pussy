@@ -26,23 +26,7 @@ class Node:
     return Node(operator, None, left, right)
 
 
-# Possible operators.
-OPERATORS = [
-      '+',           # Addition
-      '-',           # Subtract
-      '*',           # Multiplication
-      '/',           # Division
-      'pow',         # Power
-      'sqrt',        # Square root
-      'factorial',   # Factorial
-      'u-',          # Unary Subtract
-      ]
-
-
 def Eval(node):
-  assert node, "Invalid node"
-  assert node.operator in OPERATORS or node.operator is None
-
   if node.operator is None:
     assert node.value is not None, "Invalid node value"
     return node.value
@@ -115,10 +99,13 @@ class ResultKeeper:
     if value not in self.results:
       self.results[value] = node
 
-    # FIXME: Early quit since the overall number is too large.
+    # Early quit since the amouont of the expression is too large.
     if self.target_value in self.results:
+      print('Total expressions: ', self.expression_count)
+      print('Total invalid expressions: ', self.invalid_expression_count)
+      print('Total values: ', len(self.results))
       print(f'Target value {self.target_value} is found:')
-      print('%s = %s' % (self.results[self.target_value], self.target_value))
+      print(f'\t{self.results[self.target_value]} = {self.target_value}')
       sys.exit(0)
 
   def Print(self):
@@ -128,11 +115,7 @@ class ResultKeeper:
     print('Total expressions: ', self.expression_count)
     print('Total invalid expressions: ', self.invalid_expression_count)
     print('Total values: ', len(self.results))
-    if self.target_value in self.results:
-      print(f'Target value {self.target_value} is found:')
-      print('%s = %s' % (self.results[self.target_value], self.target_value))
-    else:
-      print(f'Target value {self.target_value} is NOT found.')
+    print(f'Target value {self.target_value} is NOT found.')
 
 #
 # 6 - (7! / (8 - 5!)) = 51
@@ -148,18 +131,18 @@ def ConstructExpression(node_list):
     left_node_list.remove(pair[0])
     left_node_list.remove(pair[1])
 
-    # Construct all the possible the new node list. 
-    for operator in ['+', '-', '*', '/', 'pow']:
+    # Construct all the possible the new node list.
+    BINARY_OPERATORS = ['+', '-', '*', '/', 'pow']
+    for operator in BINARY_OPERATORS:
       new_node = Node.FromOperator(operator, pair[0], pair[1])
       new_node_list = left_node_list.copy()
       new_node_list.append(new_node)
       yield new_node_list
 
-  # Apply unary operators. For these operators, we construct some aux node
-  # to help evaluate.
+  # Apply unary operators.
   #
   # Notice that unary operators can be applied indefinitely, so to make things
-  # easier, we limit to apply at most 1 times.
+  # easier, we apply at most 1 times.
   UNARY_OPERATORS = ['u-', 'sqrt', 'factorial']
   for node in node_list:
     # FIXME: There is better way to handle this.
@@ -169,21 +152,26 @@ def ConstructExpression(node_list):
     left_node_list = node_list.copy()
     left_node_list.remove(node)
 
-    # FIXME
-    # new_node = Node.FromOperator('sqrt', node, None)
-    # new_node_list = left_node_list.copy()
-    # new_node_list.append(new_node)
-    # yield new_node_list
+    # FIXME: the amount of expressions increase expoentially with the amount of
+    # unary operators we want to try. For this specific problem, sqrt seems to
+    # be unnecessary.
+    #new_node = Node.FromOperator('sqrt', node, None)
+    #new_node_list = left_node_list.copy()
+    #new_node_list.append(new_node)
+    #yield new_node_list
 
     new_node = Node.FromOperator('factorial', node, None)
     new_node_list = left_node_list.copy()
     new_node_list.append(new_node)
     yield new_node_list
 
-    new_node = Node.FromOperator('u-', node, None)
-    new_node_list = left_node_list.copy()
-    new_node_list.append(new_node)
-    yield new_node_list
+    # FIXME: the amount of expressions increase expoentially with the amount of
+    # unary operators we want to try. For this specific problem, u- seems to
+    # be unnecessary.
+    #new_node = Node.FromOperator('u-', node, None)
+    #new_node_list = left_node_list.copy()
+    #new_node_list.append(new_node)
+    #yield new_node_list
 
 
 def ProcessExpression(current_node_list):
