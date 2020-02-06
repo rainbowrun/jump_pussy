@@ -81,13 +81,14 @@ def Eval(node):
 
   if node.operator == 'factorial':
     left_value = Eval(node.left)
-    if left_value > 10:
+
+    if math.isnan(left_value):
       return math.nan
 
-    try:
-      return math.factorial(left_value)
-    except:
+    if left_value > 10 or left_value < 0 or int(left_value) != left_value:
       return math.nan
+
+    return math.factorial(left_value)
 
 
 class ResultKeeper:
@@ -165,6 +166,7 @@ def ConstructExpression(node_list):
   # easier, we limit to apply at most 1 times.
   UNARY_OPERATORS = ['u-', 'sqrt', 'factorial']
   for node in node_list:
+    # FIXME: There is better way to handle this.
     if node.operator in UNARY_OPERATORS:
       continue
 
@@ -177,11 +179,10 @@ def ConstructExpression(node_list):
     # new_node_list.append(new_node)
     # yield new_node_list
 
-    # FIXME
-    #  new_node = Node.FromOperator('factorial', node, None)
-    #  new_node_list = left_node_list.copy()
-    #  new_node_list.append(new_node)
-    #  yield new_node_list
+    new_node = Node.FromOperator('factorial', node, None)
+    new_node_list = left_node_list.copy()
+    new_node_list.append(new_node)
+    yield new_node_list
 
     new_node = Node.FromOperator('u-', node, None)
     new_node_list = left_node_list.copy()
