@@ -1,11 +1,37 @@
 #!/usr/bin/python3
+"""Find an expression to use source numbers to get a target number.
 
+For example:
+  $ eval.py 5 6 7 8 24
+    (5 + 7) * (8 - 6) = 24
+
+  $ eval.py 5 2 7
+    (5 + 2) = 7
+"""
+
+import argparse
 import itertools
 import math
 import sys
 
+parser = argparse.ArgumentParser(usage=__doc__)
+
+#
+# 6 - (7! / (8 - 5!)) = 51
+#
+parser.add_argument('numbers', type=int, nargs='*', default=[5, 6, 7, 8, 51],
+                    help='a list of numbers, the last one is the target, and the rest '
+                         'of them are source numbers.')
+
+parser.add_argument('--find_all_solutions',
+                    action='store_true',
+                    default=False,
+                    help="When specified, keep searching for more solutions "
+                         "even if one solution is found.")
+
 BINARY_OPERATORS = ['+', '-', '*', '/', 'pow']
 UNARY_OPERATORS = ['u-', 'sqrt', 'factorial']
+
 
 class Node:
   def __init__(self, operator, value, left, right):
@@ -18,9 +44,9 @@ class Node:
     if self.operator is None:
       return str(self.value)
     elif self.operator in BINARY_OPERATORS:
-      return '(%s) %s (%s)' % (self.left, self.operator, self.right)
+      return '(%s %s %s)' % (self.left, self.operator, self.right)
     elif self.operator in UNARY_OPERATORS:
-      return '%s (%s)' % (self.operator, self.left)
+      return '(%s %s)' % (self.operator, self.left)
 
   @staticmethod
   def FromValue(value):
@@ -108,8 +134,8 @@ class ResultKeeper:
       print(f'Target value {self.target_value} is found:')
       print(f'\t{node} = {self.target_value}')
 
-      # Early quit since the amouont of the expression is too large.
-      sys.exit(0)
+      if not FLAGS.find_all_solutions:
+        sys.exit(0)
 
   def Print(self):
     print('Total expressions: ', self.expression_count)
@@ -175,27 +201,17 @@ def ProcessExpression(current_node_list, result_keeper):
     else:
       ProcessExpression(node_list, result_keeper)
 
-#
-# 6 - (7! / (8 - 5!)) = 51
-#
-if len(sys.argv) == 1:
-  START_NODE_LIST = [
-     Node.FromValue(5),
-     Node.FromValue(6),
-     Node.FromValue(7),
-     Node.FromValue(8),
-     ]
-  TARGET = 51
-elif len(sys.argv) >=3:
-  START_NODE_LIST = []
-  for arg in sys.argv[1:-1]:
-    START_NODE_LIST.append(Node.FromValue(int(arg)))
-  TARGET = int(sys.argv[-1])
-else:
-  print(f'Invalid argument. Usage:\n'
-        f'\t{sys.argv[0]}\n'
-        f'\t{sys.argv[0]} <source>[...] <target>')
+
+FLAGS = parser.parse_args()
+if len(FLAGS.numbers) < 2:
+  print("At least two numbers should be specified.")
+  parser.print_usage()
   sys.exit(0)
+
+START_NODE_LIST = []
+for number in FLAGS.numbers[:-1]:
+  START_NODE_LIST.append(Node.FromValue(int(number)))
+TARGET = int(FLAGS.numbers[-1])
 
 result_keeper = ResultKeeper(TARGET)
 ProcessExpression(START_NODE_LIST, result_keeper)
