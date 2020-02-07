@@ -100,13 +100,13 @@ class ResultKeeper:
       self.results[value] = node
 
     # Early quit since the amouont of the expression is too large.
-    if self.target_value in self.results:
+    if self.target_value == value:
       print('Total expressions: ', self.expression_count)
       print('Total invalid expressions: ', self.invalid_expression_count)
       print('Total values: ', len(self.results))
       print(f'Target value {self.target_value} is found:')
-      print(f'\t{self.results[self.target_value]} = {self.target_value}')
-      sys.exit(0)
+      print(f'\t{node} = {self.target_value}')
+      #sys.exit(0)
 
   def Print(self):
     for value in self.results:
@@ -120,7 +120,23 @@ class ResultKeeper:
 #
 # 6 - (7! / (8 - 5!)) = 51
 #
-result_keeper = ResultKeeper(51)
+if len(sys.argv) == 1:
+  START_NODE_LIST = [
+     Node.FromValue(5),
+     Node.FromValue(6),
+     Node.FromValue(7),
+     Node.FromValue(8),
+     ]
+  TARGET = 51
+elif len(sys.argv) >=3:
+  START_NODE_LIST = []
+  for arg in sys.argv[1:-1]:
+    START_NODE_LIST.append(Node.FromValue(int(arg)))
+  TARGET = int(sys.argv[-1])
+else:
+  print('Invalid argument. Usage %s [source...] [target]' % sys.argv[0])
+
+result_keeper = ResultKeeper(TARGET)
 
 
 def ConstructExpression(node_list):
@@ -180,13 +196,6 @@ def ProcessExpression(current_node_list):
       result_keeper.Add(node_list[0])
     else:
       ProcessExpression(node_list)
-
-START_NODE_LIST = [
-   Node.FromValue(5),
-   Node.FromValue(6),
-   Node.FromValue(7),
-   Node.FromValue(8),
-   ]
 
 ProcessExpression(START_NODE_LIST)
 result_keeper.Print()
