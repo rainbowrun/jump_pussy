@@ -23,6 +23,12 @@ parser.add_argument('numbers', type=int, nargs='*', default=[5, 6, 7, 8, 51],
                     help='a list of numbers, the last one is the target, and the rest '
                          'of them are source numbers.')
 
+parser.add_argument('--factorial_upper_limit',
+                    type=int,
+                    default=10,
+                    help="The upper limit of factorial operand. we will not try to apply "
+                         "factorial operation on numbers larger than this.")
+
 parser.add_argument('--find_all_solutions',
                     action='store_true',
                     default=False,
@@ -53,84 +59,29 @@ class Node:
     return Node(None, value, None, None)
 
   @staticmethod
-  def FromOperator(operator, left, right):
+  def FromBinaryOperator(operator, left, right):
     return Node(operator, None, left, right)
 
-
-def Eval(node):
-  if node.operator is None:
-    assert node.value is not None, "Invalid node value"
-    return node.value
-
-  if node.operator == '+':
-    return Eval(node.left) + Eval(node.right)
-
-  if node.operator == '-':
-    return Eval(node.left) - Eval(node.right)
-
-  if node.operator == '*':
-    return Eval(node.left) * Eval(node.right)
-
-  if node.operator == '/':
-    right_value = Eval(node.right)
-    if right_value == 0:
-      return math.nan
-    else:
-      return Eval(node.left) / right_value
-
-  if node.operator == 'pow':
-    try:
-      return math.pow(Eval(node.left), Eval(node.right))
-    except:
-      return math.nan
-
-  if node.operator == 'u-':
-    return 0 - Eval(node.left)
-
-  if node.operator == 'sqrt':
-    left_value = Eval(node.left)
-    if left_value < 0:
-      return math.nan
-    else:
-      return math.sqrt(left_value)
-
-  if node.operator == 'factorial':
-    left_value = Eval(node.left)
-
-    if math.isnan(left_value):
-      return math.nan
-
-    # FIXME: Facotrial has upper limit 10.
-    if left_value > 10 or left_value < 0 or int(left_value) != left_value:
-      return math.nan
-
-    return math.factorial(left_value)
+  @staticmethod
+  def FromUnaryOperator(operator, node):
+    return Node(operator, None, node, None)
 
 
 class ResultKeeper:
   def __init__(self, target_value=51):
     self.target_value = target_value
-
     self.expression_count = 0
-    self.invalid_expression_count = 0
-    self.valid_expression_count = 0
 
   def Add(self, node):
     self.expression_count += 1
     if self.expression_count % 1_000_000 == 0:
       print(f'See {self.expression_count} different expressions...')
 
-    value = Eval(node)
-    if math.isnan(value):
-      self.invalid_expression_count += 1
-      return
-
-    self.valid_expression_count += 1
+    value = node.value
+    assert not math.isnan(value), f"Invalid expression {node}"
 
     if self.target_value == value:
       print('Total expressions: ', self.expression_count)
-      print('Total invalid expressions: ', self.invalid_expression_count)
-      print('Total valid expression: ', self.valid_expression_count)
       print(f'Target value {self.target_value} is found:')
       print(f'\t{node} = {self.target_value}')
 
@@ -139,8 +90,6 @@ class ResultKeeper:
 
   def Print(self):
     print('Total expressions: ', self.expression_count)
-    print('Total invalid expressions: ', self.invalid_expression_count)
-    print('Total valid expression: ', self.valid_expression_count)
 
 
 def ConstructExpression(node_list):
@@ -153,7 +102,31 @@ def ConstructExpression(node_list):
 
     # Construct all the possible the new node list.
     for operator in BINARY_OPERATORS:
-      new_node = Node.FromOperator(operator, pair[0], pair[1])
+      new_node = Node.FromBinaryOperator(operator, pair[0], pair[1])
+
+      # Eval the new node.
+      if new_node.operator == '+':
+        new_node.value = new_node.left.value + new_node.right.value
+
+      if new_node.operator == '-':
+        new_node.value = new_node.left.value - new_node.right.value
+
+      if new_node.operator == '*':
+        new_node.value = new_node.left.value * new_node.right.value
+
+      if new_node.operator == '/':
+        if new_node.right.value == 0:
+          # Do not construct invalid expression.
+          continue
+        else:
+          new_node.value = new_node.left.value / new_node.right.value
+
+      if new_node.operator == 'pow':
+        try:
+          new_node.value = math.pow(new_node.left.value, new_node.right.value)
+        except:
+          continue
+
       new_node_list = left_node_list.copy()
       new_node_list.append(new_node)
       yield new_node_list
@@ -161,37 +134,49 @@ def ConstructExpression(node_list):
   # Apply unary operators.
   #
   # Notice that unary operators can be applied indefinitely, so to make things
-  # easier, we apply at most 1 times.
+  # easier, we apply some restriction to each of them. See below for details.
   for node in node_list:
-    # FIXME: There is better way to handle this. Namely we compute the value and
-    # then check if it is appropriate to apply the operator to the value. Such
-    # factorial of 100000 (not good), or sqrt of -30 (not good).
-    if node.operator in UNARY_OPERATORS:
-      continue
-
     left_node_list = node_list.copy()
     left_node_list.remove(node)
 
-    # FIXME: the amount of expressions increase expoentially with the amount of
-    # unary operators we want to try. For this specific problem, sqrt seems to
-    # be unnecessary.
-    #new_node = Node.FromOperator('sqrt', node, None)
-    #new_node_list = left_node_list.copy()
-    #new_node_list.append(new_node)
-    #yield new_node_list
+    for operator in UNARY_OPERATORS:
+      if operator == 'sqrt':
+        if (node.value < 0 or
+            node.value == 1 or
+            node.value == 0 or
+            math.sqrt(node.value) != int(math.sqrt(node.value))):
+          continue
 
-    new_node = Node.FromOperator('factorial', node, None)
-    new_node_list = left_node_list.copy()
-    new_node_list.append(new_node)
-    yield new_node_list
+        new_node = Node.FromUnaryOperator('sqrt', node)
+        new_node.value = math.sqrt(node.value)
+        new_node_list = left_node_list.copy()
+        new_node_list.append(new_node)
+        yield new_node_list
 
-    # FIXME: the amount of expressions increase expoentially with the amount of
-    # unary operators we want to try. For this specific problem, u- seems to
-    # be unnecessary.
-    #new_node = Node.FromOperator('u-', node, None)
-    #new_node_list = left_node_list.copy()
-    #new_node_list.append(new_node)
-    #yield new_node_list
+      if operator == 'factorial':
+        if (node.value > FLAGS.factorial_upper_limit or
+            node.value < 0 or
+            int(node.value) != node.value or
+            node.value == 1 or   # 1! = 1
+            node.value == 2):    # 2! = 2
+          continue
+
+        new_node = Node.FromUnaryOperator('factorial', node)
+        new_node.value = math.factorial(node.value)
+        new_node_list = left_node_list.copy()
+        new_node_list.append(new_node)
+        yield new_node_list
+
+      if operator == 'u-':
+        if (node.operator == 'u-' or # don't negative again.
+            node.value == 0):
+          continue
+
+        new_node = Node.FromUnaryOperator('u-', node)
+        new_node.value = 0 - node.value
+        new_node_list = left_node_list.copy()
+        new_node_list.append(new_node)
+        yield new_node_list
 
 
 def ProcessExpression(current_node_list, result_keeper):
