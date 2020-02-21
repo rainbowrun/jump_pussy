@@ -8,6 +8,7 @@ possible solutions and then filtering.
 import argparse
 import copy
 import itertools
+import functools
 
 parser = argparse.ArgumentParser(usage=__doc__)
 
@@ -88,12 +89,20 @@ def DedupIdentifiableGroups(solutions):
 
 
 def DedupNonIdentifiableGroups(solutions):
-  # For non-identifiable groups, we need to sort the groups then to compare
-  # them along the index.
+  # For non-identifiable groups, we need to sort the groups of a solution then
+  # to compare every group along the index to decide if two solutions are the
+  # same.
+  #
   # Sort the groups by:
   #     - First by group size, small groups go first.
   #     - Second by element: groups with the same size compared by 
   #       their elements. Smaller elements go first.
+
+  # A comparison function is any callable that accept two arguments, compares
+  # them, and returns a negative number for less-than, zero for equality, or a
+  # positive number for greater-than.
+  def compare_group(group_a, group_b):
+    if len(group_a)
 
   # TODO: Implement this.
   return solutions
