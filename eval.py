@@ -68,8 +68,15 @@ class Node:
 
 
 class ResultKeeper:
-  def __init__(self, target_value=51):
+  def __init__(self, target_value, find_all_solutions):
+    # The value to look for.
     self.target_value = target_value
+
+    # Flag to indicate whether to stop the program if one valid expression is
+    # found.
+    self.find_all_solutions = find_all_solutions
+
+    # How many expression we have seen.
     self.expression_count = 0
 
   def Add(self, node):
@@ -85,7 +92,7 @@ class ResultKeeper:
       print(f'Target value {self.target_value} is found:')
       print(f'\t{node} = {self.target_value}')
 
-      if not FLAGS.find_all_solutions:
+      if not self.find_all_solutions:
         sys.exit(0)
 
   def Print(self):
@@ -187,17 +194,23 @@ def ProcessExpression(current_node_list, result_keeper):
       ProcessExpression(node_list, result_keeper)
 
 
-FLAGS = parser.parse_args()
-if len(FLAGS.numbers) < 2:
-  print("At least two numbers should be specified.")
-  parser.print_usage()
-  sys.exit(0)
+def main():
+  global FLAGS
+  FLAGS = parser.parse_args()
+  if len(FLAGS.numbers) < 2:
+    print("At least two numbers should be specified.")
+    parser.print_usage()
+    sys.exit(0)
 
-START_NODE_LIST = []
-for number in FLAGS.numbers[:-1]:
-  START_NODE_LIST.append(Node.FromValue(int(number)))
-TARGET = int(FLAGS.numbers[-1])
+  START_NODE_LIST = []
+  for number in FLAGS.numbers[:-1]:
+    START_NODE_LIST.append(Node.FromValue(int(number)))
+  TARGET = int(FLAGS.numbers[-1])
 
-result_keeper = ResultKeeper(TARGET)
-ProcessExpression(START_NODE_LIST, result_keeper)
-result_keeper.Print()
+  result_keeper = ResultKeeper(TARGET, FLAGS.find_all_solutions)
+  ProcessExpression(START_NODE_LIST, result_keeper)
+  result_keeper.Print()
+
+
+if __name__ == '__main__':
+  main()
