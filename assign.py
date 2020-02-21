@@ -2,13 +2,14 @@
 
 """
 A program solves combinatorics assign problems by enumerating all the
-possible solutions and then filtering.
+possible solutions and filtering.
 """
 
 import argparse
 import copy
 import itertools
 import functools
+import math
 
 
 class Solution:
@@ -27,8 +28,7 @@ class Solution:
 
 def CreateCandidateSolutions(objects, num_groups):
   # Start with 'num_groups' of empty groups as the initial solution.
-  start_solution = Solution(num_groups)
-  solutions = [start_solution]
+  solutions = [Solution(num_groups)]
 
   for object in objects:
     print(f'Consider object: {object}')
@@ -44,6 +44,7 @@ def CreateCandidateSolutions(objects, num_groups):
     solutions = new_solutions
 
   # Verify the result.
+  assert len(solutions) == math.pow(num_groups, len(objects))
   for solution in solutions:
     assert len(solution.groups) == num_groups
   return solutions
@@ -59,7 +60,8 @@ def DedupIdentifiableGroups(solutions):
 
     assert len(solution_a.groups) == len(solution_b.groups)
 
-    if all([solution_a.groups[i] == solution_b.groups[i] for i in range(len(solution_a.groups))]):
+    if all([group_a == group_b for group_a, group_b
+                               in zip(solution_a.groups, solution_b.groups)]):
       solution_b.is_duplicate = True
 
   return [solution for solution in solutions if not solution.is_duplicate]
@@ -68,9 +70,7 @@ def DedupIdentifiableGroups(solutions):
 def DedupNonIdentifiableGroups(solutions):
   # For non-identifiable groups, we need to sort the groups of a solution then
   # to compare every group along the index to decide if two solutions are the
-  # same.
-  #
-  # Sort the groups by:
+  # same. Sort the groups by:
   #     - First by group size, small groups go first.
   #     - Second by element: groups with the same size compared by
   #       their elements. Smaller elements go first.
@@ -84,10 +84,10 @@ def DedupNonIdentifiableGroups(solutions):
     if len(group_a) > len(group_b):
       return 1
 
-    for i in range(len(group_a)):
-      if group_a[i] < group_b[i]:
+    for element_a, element_b in zip(group_a, group_b):
+      if element_a < element_b:
         return -1
-      if group_a[i] > group_b[i]:
+      if element_a > element_b:
         return 1
 
     return 0
@@ -137,6 +137,7 @@ def main():
   print(f'Number of groups: {FLAGS.num_groups}')
   print(f'Objects are identifiable: {FLAGS.object_identifiable}')
   print(f'Groups are identifiable: {FLAGS.group_identifiable}')
+  print(f'Allow empty group: {FLAGS.allow_empty_group}')
 
   if FLAGS.object_identifiable:
     objects = list(range(FLAGS.num_objects))
@@ -158,6 +159,8 @@ def main():
     for solution in solutions:
       if all([len(group) != 0 for group in solution.groups]):
         no_empty_group_solutions.append(solution)
+    print(f'{len(solutions)-len(no_empty_group_solutions)}'
+          f' empty groups are filtered.')
     solutions = no_empty_group_solutions
 
   # Sort all the groups.
