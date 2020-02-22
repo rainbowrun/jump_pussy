@@ -6,7 +6,6 @@ possible solutions and filtering.
 """
 
 import argparse
-import copy
 import functools
 import math
 
@@ -25,6 +24,16 @@ class Solution:
     return f'{self.groups}'
 
 
+def CopySolution(solution):
+  new_solution = Solution(0)
+
+  for group in solution.groups:
+    new_group = group.copy()
+    new_solution.groups.append(new_group)
+
+  return new_solution
+
+
 def CreateCandidateSolutions(objects, num_groups):
   # Start with 'num_groups' of empty groups as the initial solution.
   solutions = [Solution(num_groups)]
@@ -36,7 +45,7 @@ def CreateCandidateSolutions(objects, num_groups):
     # For each object, num_groups new grouping solutions are created.
     for solution in solutions:
       for group_index in range(len(solution.groups)):
-        new_solution = copy.deepcopy(solution)
+        new_solution = CopySolution(solution)
         new_solution.groups[group_index].append(object)
         new_solutions.append(new_solution)
 
