@@ -7,7 +7,6 @@ possible solutions and filtering.
 
 import argparse
 import copy
-import itertools
 import functools
 import math
 
@@ -51,18 +50,36 @@ def CreateCandidateSolutions(objects, num_groups):
 
 
 def DedupIdentifiableGroups(solutions):
-  # For identifiable groups, group index (i.e. 0, 1, 2, ..., num_groups-1)
-  # serves as group name, so we just need to compare groups of two solutions
-  # one by one.
-  for solution_a, solution_b in itertools.combinations(solutions, 2):
-    if solution_a.is_duplicate or solution_b.is_duplicate:
-      continue
+  # The best duplicate method is to sort all the solutions, and process them in
+  # one pass, which is n*log(n).
 
-    assert len(solution_a.groups) == len(solution_b.groups)
+  # To compare two solution, we first compare the size of corresponding groups,
+  # solution with smaller groups go first. If all the group sizes are equal, the
+  # content of the group is compared, group with smaller elements go first.
+  def compare_solution(solution_a, solution_b):
+    for group_a, group_b in zip(solution_a.groups, solution_b.groups):
+      if len(group_a) < len(group_b):
+        return -1
+      if len(group_a) > len(group_b):
+        return 1
 
-    if all([group_a == group_b for group_a, group_b
-                               in zip(solution_a.groups, solution_b.groups)]):
-      solution_b.is_duplicate = True
+    for group_a, group_b in zip(solution_a.groups, solution_b.groups):
+      for element_a, element_b in zip(group_a, group_b):
+        if element_a < element_b:
+          return -1
+        if element_a > element_b:
+          return 1
+
+    return 0
+
+  solutions.sort(key=functools.cmp_to_key(compare_solution))
+
+  current_solution = solutions[0]
+  for solution in solutions[1:]:
+    if compare_solution(current_solution, solution) == 0:
+      solution.is_duplicate = True
+    else:
+      current_solution = solution
 
   return [solution for solution in solutions if not solution.is_duplicate]
 
@@ -131,7 +148,6 @@ def main():
                       default=False,
                       help="Whether to print final groups.")
 
-
   FLAGS = parser.parse_args()
   print(f'Number of objects: {FLAGS.num_objects}')
   print(f'Number of groups: {FLAGS.num_groups}')
@@ -144,7 +160,6 @@ def main():
   else:
     objects = [0] * FLAGS.num_objects
   print(f'Objects: {objects}')
-
 
   # Create candidate solutions.
   solutions = CreateCandidateSolutions(objects, FLAGS.num_groups)
@@ -164,6 +179,7 @@ def main():
     solutions = no_empty_group_solutions
 
   # Sort all the groups.
+  print(f'{len(solutions)} groups are left.')
   for solution in solutions:
     for group in solution.groups:
       group.sort()
