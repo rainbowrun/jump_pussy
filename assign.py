@@ -3,6 +3,9 @@
 """
 A program solves combinatorics assign problems by enumerating all the
 possible solutions and filtering.
+
+TODO: Use smarter way to generate identifiable objects and non-identifiable
+      objects to save memory.
 """
 
 import argparse
@@ -24,19 +27,73 @@ class Solution:
     return f'{self.groups}'
 
 
-def CopySolution(solution):
-  new_solution = Solution(0)
+def RecursiveLoop(num_groups, level, group_index_list, objects, solutions):
+  level = level - 1
 
-  for group in solution.groups:
-    new_group = group.copy()
-    new_solution.groups.append(new_group)
+  for i in range(num_groups):
+    group_index_list.append(i)
 
-  return new_solution
+    if level != 0:
+      RecursiveLoop(num_groups, level, group_index_list, objects, solutions)
+    else:
+      solution = Solution(num_groups)
+      for object_index, group_index in enumerate(group_index_list):
+        solution.groups[group_index].append(objects[object_index])
+      solutions.append(solution)
+      if len(solutions) % 1_000_000 == 0:
+        print(f'{len(solutions)} solutions are created.')
 
+    group_index_list.pop()
 
-def CreateCandidateSolutions(objects, num_groups):
+def CreateCandidateSolutionsByRecursive(objects, num_groups):
+  solutions = []
+  RecursiveLoop(num_groups, len(objects), [], objects, solutions)
+  return solutions
+
+# This implementation fixed the number of objects (a.k.a. levels of the loop)
+# and is not useful in this program.
+def CreateCandidateSolutionsByLoop(objects, num_groups):
+  solutions = []
+
+  for i0 in range(num_groups):
+    for i1 in range(num_groups):
+      for i2 in range(num_groups):
+        for i3 in range(num_groups):
+          for i4 in range(num_groups):
+            for i5 in range(num_groups):
+              for i6 in range(num_groups):
+                for i7 in range(num_groups):
+                  for i8 in range(num_groups):
+                    for i9 in range(num_groups):
+                      solution = Solution(num_groups)
+                      solution.groups[i0].append(objects[0])
+                      solution.groups[i1].append(objects[1])
+                      solution.groups[i2].append(objects[2])
+                      solution.groups[i3].append(objects[3])
+                      solution.groups[i4].append(objects[4])
+                      solution.groups[i5].append(objects[5])
+                      solution.groups[i6].append(objects[6])
+                      solution.groups[i7].append(objects[7])
+                      solution.groups[i8].append(objects[8])
+                      solution.groups[i9].append(objects[9])
+                      solutions.append(solution)
+                      if len(solutions) % 1_000_000 == 0:
+                        print(f'{len(solutions)} solutions are created.')
+
+  return solutions
+
+def CreateCandidateSolutionsByCopy(objects, num_groups):
   # Start with 'num_groups' of empty groups as the initial solution.
   solutions = [Solution(num_groups)]
+
+  def CopySolution(solution):
+    new_solution = Solution(0)
+
+    for group in solution.groups:
+      new_group = group.copy()
+      new_solution.groups.append(new_group)
+
+    return new_solution
 
   for object in objects:
     print(f'Consider object: {object}')
@@ -51,10 +108,6 @@ def CreateCandidateSolutions(objects, num_groups):
 
     solutions = new_solutions
 
-  # Verify the result.
-  assert len(solutions) == math.pow(num_groups, len(objects))
-  for solution in solutions:
-    assert len(solution.groups) == num_groups
   return solutions
 
 
@@ -171,7 +224,14 @@ def main():
   print(f'Objects: {objects}')
 
   # Create candidate solutions.
-  solutions = CreateCandidateSolutions(objects, FLAGS.num_groups)
+  # solutions = CreateCandidateSolutionsByCopy(objects, FLAGS.num_groups)
+  solutions = CreateCandidateSolutionsByRecursive(objects, FLAGS.num_groups)
+
+  # Verify the result.
+  assert len(solutions) == math.pow(FLAGS.num_groups, FLAGS.num_objects)
+  for solution in solutions:
+    assert len(solution.groups) == FLAGS.num_groups
+
   if FLAGS.print_candidate_groups:
     for solution in solutions:
       print(f'\t{solution}')
@@ -188,7 +248,7 @@ def main():
     solutions = no_empty_group_solutions
 
   # Sort all the groups.
-  print(f'{len(solutions)} groups are left.')
+  print(f'{len(solutions)} solutions are left.')
   for solution in solutions:
     for group in solution.groups:
       group.sort()
