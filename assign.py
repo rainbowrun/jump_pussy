@@ -176,6 +176,14 @@ def DedupNonIdentifiableGroups(solutions):
 
   return DedupIdentifiableGroups(solutions)
 
+
+def add_bool_arg(parser, name, default, help):
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('--' + name, dest=name, action='store_true', help=help)
+    group.add_argument('--no-' + name, dest=name, action='store_false', help=help)
+    parser.set_defaults(**{name:default})
+
+
 def main():
   parser = argparse.ArgumentParser(usage=__doc__)
 
@@ -185,30 +193,30 @@ def main():
   parser.add_argument('num_groups', type=int, default=2,
                       help='Number of groups to receive to objects.')
 
-  parser.add_argument('--object_identifiable',
-                      action='store_true',
-                      default=False,
-                      help="Whether the objects are identifiable.")
+  add_bool_arg(parser,
+               name='object_identifiable',
+               default=False,
+               help="Whether the objects are identifiable.")
 
-  parser.add_argument('--group_identifiable',
-                      action='store_true',
-                      default=False,
-                      help="Whether the groups are identifiable.")
+  add_bool_arg(parser,
+               name='group_identifiable',
+               default=False,
+               help="Whether the groups are identifiable.")
 
-  parser.add_argument('--allow_empty_group',
-                      action='store_true',
-                      default=False,
-                      help="Whether empty groups are allowed.")
+  add_bool_arg(parser,
+               name='allow_empty_group',
+               default=False,
+               help="Whether empty groups are allowed.")
 
-  parser.add_argument('--print_candidate_groups',
-                      action='store_true',
-                      default=False,
-                      help="Whether to print canidate groups.")
+  add_bool_arg(parser,
+               name='print_candidate_groups',
+               default=False,
+               help="Whether to print canidate groups.")
 
-  parser.add_argument('--print_final_groups',
-                      action='store_true',
-                      default=False,
-                      help="Whether to print final groups.")
+  add_bool_arg(parser,
+               name='print_final_groups',
+               default=False,
+               help="Whether to print final groups.")
 
   FLAGS = parser.parse_args()
   print(f'Number of objects: {FLAGS.num_objects}')
