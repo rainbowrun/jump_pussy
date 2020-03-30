@@ -3,9 +3,6 @@
 """
 A program solves combinatorics assign problems by enumerating all the
 possible solutions and filtering.
-
-TODO: Use smarter way to generate identifiable objects and non-identifiable
-      objects to save memory.
 """
 
 import argparse
@@ -45,68 +42,29 @@ def RecursiveLoop(num_groups, level, group_index_list, objects, solutions):
 
     group_index_list.pop()
 
+
 def CreateCandidateSolutionsByRecursive(objects, num_groups):
   solutions = []
   RecursiveLoop(num_groups, len(objects), [], objects, solutions)
   return solutions
 
-# This implementation fixed the number of objects (a.k.a. levels of the loop)
-# and is not useful in this program.
-def CreateCandidateSolutionsByLoop(objects, num_groups):
+
+def CreateCandidateSolutionsByNumberEncoding(objects, num_groups):
+  # Each number in (num_groups ^ num_objects) is a solution.
+  # Here the number is treated as an encoding of the groups.
+  num_objects = len(objects)
+
   solutions = []
+  for i in range(int(math.pow(num_groups, num_objects))):
+    solution = Solution(num_groups)
 
-  for i0 in range(num_groups):
-    for i1 in range(num_groups):
-      for i2 in range(num_groups):
-        for i3 in range(num_groups):
-          for i4 in range(num_groups):
-            for i5 in range(num_groups):
-              for i6 in range(num_groups):
-                for i7 in range(num_groups):
-                  for i8 in range(num_groups):
-                    for i9 in range(num_groups):
-                      solution = Solution(num_groups)
-                      solution.groups[i0].append(objects[0])
-                      solution.groups[i1].append(objects[1])
-                      solution.groups[i2].append(objects[2])
-                      solution.groups[i3].append(objects[3])
-                      solution.groups[i4].append(objects[4])
-                      solution.groups[i5].append(objects[5])
-                      solution.groups[i6].append(objects[6])
-                      solution.groups[i7].append(objects[7])
-                      solution.groups[i8].append(objects[8])
-                      solution.groups[i9].append(objects[9])
-                      solutions.append(solution)
-                      if len(solutions) % 1_000_000 == 0:
-                        print(f'{len(solutions)} solutions are created.')
+    for object_index in range(num_objects):
+      a = i // num_groups
+      b = i % num_groups
+      solution.groups[b].append(objects[object_index])
+      i = a
 
-  return solutions
-
-def CreateCandidateSolutionsByCopy(objects, num_groups):
-  # Start with 'num_groups' of empty groups as the initial solution.
-  solutions = [Solution(num_groups)]
-
-  def CopySolution(solution):
-    new_solution = Solution(0)
-
-    for group in solution.groups:
-      new_group = group.copy()
-      new_solution.groups.append(new_group)
-
-    return new_solution
-
-  for object in objects:
-    print(f'Consider object: {object}')
-    new_solutions = []
-
-    # For each object, num_groups new grouping solutions are created.
-    for solution in solutions:
-      for group_index in range(len(solution.groups)):
-        new_solution = CopySolution(solution)
-        new_solution.groups[group_index].append(object)
-        new_solutions.append(new_solution)
-
-    solutions = new_solutions
+    solutions.append(solution)
 
   return solutions
 
@@ -232,7 +190,6 @@ def main():
   print(f'Objects: {objects}')
 
   # Create candidate solutions.
-  # solutions = CreateCandidateSolutionsByCopy(objects, FLAGS.num_groups)
   solutions = CreateCandidateSolutionsByRecursive(objects, FLAGS.num_groups)
 
   # Verify the result.
