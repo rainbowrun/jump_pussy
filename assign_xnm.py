@@ -3,7 +3,7 @@
 # Calculate identifiable objects, identifiable groups, each group has at least 1
 # object.
 #
-# This is like N books given to M persons.
+# This is like N books are given to M people and everyone at least gets one book.
 
 import argparse
 import math
