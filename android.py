@@ -154,8 +154,9 @@ def Initialize():
   pussy = InitializePussy()
   sword_list = InitializeSword(max_sword_count, max_width/2, max_width)
 
-  bird = Bird(200, 200)
-  bird_list = [bird]
+  bird_a = Bird(200, 200)
+  bird_b = Bird(300, 300)
+  bird_list = [bird_a, bird_b]
 
   return pussy, sword_list, bird_list
 
@@ -174,16 +175,23 @@ while run:
     # Detect if Pussy is dead.
     for sword in sword_list:
       if pussy.Rectangle().colliderect(sword.Rectangle()):
+        print('Dead on a sword.')
         is_dead = True
         break
+
+    if not is_dead:
+      for bird in bird_list:
+        if pussy.Rectangle().colliderect(bird.Rectangle()):
+          print('Dead on a bird.')
+          is_dead = True
+          break
 
     if is_dead == True:
       if keys[pygame.K_RETURN]:
         is_dead = False
         Initialize();
 
-      else:
-        continue
+      continue
     
     # Move the swords.
     for sword in sword_list:
